@@ -1,0 +1,162 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct node* link;
+
+struct node{ int chave; link esq; link dir; };
+
+link inserir(link raiz, int valor) {
+     if (raiz == NULL) { //se a Ã¡rvore estiver vazia
+        link novoNode = (link)malloc(sizeof(struct node)); //entÃ£o cria um novo nÃ³
+        novoNode->chave = valor;
+        novoNode->esq = NULL;
+        novoNode->dir = NULL;
+        return novoNode;
+     }    
+     if (valor < raiz->chave) //se o valor for menor que a chave
+        raiz->esq = inserir(raiz->esq, valor); //insere na subÃ¡rvore esquerda
+     else if (valor > raiz->chave) //se o valor for maior que a chave
+        raiz->dir = inserir(raiz->dir, valor); //insere na subÃ¡rvore direita
+     return raiz; //retorna a raiz atualizada
+}
+
+link buscar(link raiz, int chave) {
+     //se a Ã¡rvore estiver vazia ou encontrou a chave
+     if (raiz == NULL || raiz->chave == chave) 
+        return raiz;  
+     if (chave < raiz->chave) //se a chave for menor que a chave na raiz
+        return buscar(raiz->esq, chave); //busca na subÃ¡rvore esquerda
+     else  //se a chave for maior que a chave na raiz
+        return buscar(raiz->dir, chave); //busca na subÃ¡rvore direita
+}
+
+link removerCaso1e2(link raiz) { //casos 1 e 2 (nÃ£o tem filho ou tem 1 filho)
+     link q = raiz;  
+     if (raiz->esq == NULL){ 
+        q = raiz->dir; //caso 1 (se dir == NULL) ou caso 2 (se dir != NULL)  
+        free(raiz);
+        return q; //retorna a raiz atualizada
+     } else if (raiz->dir == NULL){
+        q = raiz->esq; //caso 2: esq != NULL e dir == NULL 
+        free(raiz);
+        return q; //retorna a raiz atualizada
+   }
+   return q;
+}
+
+link removerCaso3(link raiz) { //caso 3 (tem 2 filhos)
+  link p = raiz;
+  link q = raiz->dir;
+  while (q->esq != NULL) { //encontrar sucessor lÃ³gico
+         p = q;
+         q = q->esq;
+   }
+   raiz->chave = q->chave;
+   if (p != raiz)  //sucessor nÃ£o Ã© filho da direita da raiz
+      p->esq = removerCaso1e2(q);
+  else
+     p->dir = removerCaso1e2(p->dir);
+    
+  return raiz; //retorna a raiz atualizada  
+}
+
+link remover(link raiz, int chave) {
+     if (raiz == NULL) return NULL; //nÃ£o encontrou a chave
+     if (chave == raiz->chave) //encontrou a chave
+        if (raiz->esq == NULL || raiz->dir == NULL) //caso 1 ou caso 2
+           raiz = removerCaso1e2(raiz);
+        else //caso 3
+           raiz = removerCaso3(raiz); 
+     else //ainda nÃ£o encontrou a chave    
+        if (chave < raiz->chave) //se a chave for menor que a chave na raiz
+           raiz->esq = remover(raiz->esq, chave); //remove na subÃ¡rvore esquerda
+        else //se a chave for maior que a chave na raiz
+           raiz->dir = remover(raiz->dir, chave); //remove na subÃ¡rvore direita
+    return raiz;
+}
+
+void percursoPreOrdem(link raiz) {
+     if (raiz != NULL) {
+        printf("%i ", raiz->chave); //visita a raiz
+        percursoPreOrdem(raiz->esq); //percorre a subÃ¡rvore esquerda
+        percursoPreOrdem(raiz->dir); //percorre a subÃ¡rvore direita  
+     }
+}
+
+void percursoInOrdem(link raiz) {
+     if (raiz != NULL) {
+        percursoInOrdem(raiz->esq); //percorre a subÃ¡rvore esquerda
+        printf("%i ", raiz->chave); //visita a raiz
+        percursoInOrdem(raiz->dir); //percorre a subÃ¡rvore direita   
+     }
+}
+
+void percursoPosOrdem(link raiz) {
+     if (raiz != NULL) {
+        percursoPosOrdem(raiz->esq); //percorre a subÃ¡rvore esquerda
+        percursoPosOrdem(raiz->dir); //percorre a subÃ¡rvore direita
+        printf("%i ", raiz->chave); //visita a raiz
+     }
+}
+
+void imprimirPreOrdem(link raiz) {
+     printf("(");
+     if (raiz != NULL) {
+        printf("% i ", raiz->chave);
+        imprimirPreOrdem(raiz->esq);
+        imprimirPreOrdem(raiz->dir);    
+     }
+     printf(")");
+}
+
+void imprimirInOrdem(link p, int b) {
+     int i;
+     if (p == NULL) {
+        for (i = 0; i < b; i++) printf("-----");
+        printf("NULL\n");
+        return;
+     }
+     imprimirInOrdem(p->dir, b + 1);
+     for (i = 0; i < b; i++) printf("-----");
+     printf("%i\n", p->chave);
+     imprimirInOrdem(p->esq, b + 1);
+}
+
+int main(void) {
+    link Arvore = NULL; //inicializar a ABB vazia
+    int k;
+
+    Arvore = inserir(Arvore, 50);
+    Arvore = inserir(Arvore, 40);
+    Arvore = inserir(Arvore, 60);
+    Arvore = inserir(Arvore, 35);
+    Arvore = inserir(Arvore, 45);
+    Arvore = inserir(Arvore, 55);
+    Arvore = inserir(Arvore, 65);
+
+    imprimirPreOrdem(Arvore);
+    printf("\n\n");
+    imprimirInOrdem(Arvore, 0);
+
+    printf("\n");
+    percursoPreOrdem(Arvore);
+    printf("\n");
+    percursoInOrdem(Arvore);
+    printf("\n");
+    percursoPosOrdem(Arvore);
+
+    printf("\n\nInforme o valor que deseja procurar: ");
+    scanf("%d", &k);
+    if (buscar(Arvore, k) != NULL)
+       printf("O elemento %d foi encontrado na Ã¡rvore.\n", k);
+    else
+       printf("O elemento %d nÃ£o foi encontrado na Ã¡rvore.\n", k);
+
+    printf("\nInforme o valor que deseja remover: ");
+    scanf("%d", &k);
+    Arvore = remover(Arvore, k);
+
+    imprimirInOrdem(Arvore, 0);
+
+    return 0;
+}
